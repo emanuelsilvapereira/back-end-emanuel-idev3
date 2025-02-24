@@ -1,8 +1,11 @@
 const User = require("./user");
+const path = require('path');
+const fs = require('fs')
 
 class userService{
 
     constructor(){
+        this.filePath = path.join(__dirname, 'user.json');
         this.user = [];//Array para armazenar user
         this.nextId = 1;//contador para grrar id
     }
