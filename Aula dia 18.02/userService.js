@@ -2,60 +2,87 @@ const User = require("./user");
 const path = require('path');
 const fs = require('fs');
 
-class userService  {
+
+class userService {
+
     constructor() {
         this.filePath = path.join(__dirname, 'user.json');
-        this.user = this.loadUsers();//Array para armazenar user
-        this.nextId = this.getNextId();//contador para grrar id
+        this.users = this.loadUsers(); //Array para armazenar user
+        this.nextId = this.getNextId(); //contador para grrar id
     }
-
 
     loadUsers() {
-        try { 
-        if (fs.existsSync(this.filePath)) {
-            const data = fs.readFileSync(this.filePath);
-            return JSON.parse(data);
+        try { //tenta executar o bloco de codigo
+            if (fs.existsSync(this.filePath)) { //verifica se o arquivo existe
+                const data = fs.readFileSync(this.filePath); //le o arquivo
+                return JSON.parse(data); //transforma o json em objeto
+            }
+        } catch (erro) { //caso ocorra um erro
+            console.log('Erro ao carregar arquivo', erro);
         }
-    }catch(erro){
-        console.log('Erro ao carregar arquivo', erro);
-    } 
-    return [];
+        return []; //retorna um array vazio
     }
 
-    getNextId(){
-        try{
-        if(this.user.length===0) return 1;
-            return Math.max(...this.user.map(user => user.id))
-         } catch (erro){
-            console.log('Erro ao buscar o proximo id', erro)
-         }
-     
-    } saveUsers(){
-        try{
-        fs.writeFileSync(this.filePath, JSON.stringfy(this.user));
-    }catch(erro){
-        console.log('Erro ao salvar o arquivo', erro);
+    //definir o próximo id a ser utilizado
+    getNextId() { //função para buscar o próximo id 
+        try {
+            if (this.users.length === 0) return 1;
+            return Math.max(...this.users.map(user => user.id)) + 1;
+        } catch (erro) {
+            console.log("Erro ao buscar proximo id", erro);
+        }
     }
+
+    saveUsers() { //função para salvar os usuários
+        try {
+            fs.writeFileSync(this.filePath, JSON.stringify(this.users));
+        } catch (erro) {
+            console.log("Erro ao salvar", erro);
+        }
     }
 
 
-    addUser(nome, email, senha, endereço, telefone, cpf) {
-        try{
-        const user = new User(this.nextId++, nome, email, senha, endereco, telefone, cpf)
-        this.user.push(user)
-        this.saveUsers();
-        return user;
-    } catch(erro){
-        console.log('Erro ao buscar o proximo id', erro)
+    addUser(nome, email, senha, endereco, cpf, telefone) {
+        try {
+            const user = new User(this.nextId++, nome, email, senha, endereco, cpf, telefone);
+            console.log(user)
+            this.users.push(user);
+            this.saveUsers();
+            return user;
+        } catch (erro) {
+            console.log("Erro ao add id", erro);
+        }
     }
-    }
+
     getUsers() {
+        try {
+            return this.users;
+        } catch (erro) {
+            console.log("Erro ao buscar usuario", erro);
+        }
+    }
+
+    deleteUser(id){
         try{
-        return this.user
-    } catch(erro){
-        console.log('Erro ao buscar o proximo id', erro)
+            this.users = this.users.filter(user => user.id !== id);
+            this.saveUsers();
+            
+        }catch{
+            console.log('erro ao deletar usuario', erro);
+        }
     }
+    updateUser(id, newUserData) {
+        try {
+            this.users = this.users.map(user => 
+                user.id === id ? { ...user, ...newUserData } : user
+            );
+            this.saveUsers();
+        } catch (erro) {
+            console.log('Erro ao atualizar usuário', erro);
+        }
     }
+    
+
 }
 
 module.exports = new userService
