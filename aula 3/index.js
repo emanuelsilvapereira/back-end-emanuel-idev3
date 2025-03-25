@@ -6,14 +6,15 @@ app.use(express.json());
 
 //rota para criar usuario
 
-app.post("/users", (req, res)=>{
+app.post("/users", async(req, res)=>{
     const {nome, email, senha, endereco, telefone, cpf} = req.body;
     if(!nome || !email || !senha || !endereco || !telefone || !cpf){
         return res.status(400).json
-        ({error: "nome e email são obrigatorios"})
+        ({error: "nome, email, senha, endereco, telefone e cpf são obrigatórios"})
     }
+    
 
-    const user = userService.addUser(nome, email, senha, endereco, telefone, cpf);
+    const user = await userService.addUser(nome, email, senha, endereco, telefone, cpf);
     res.status(200).json({user});
 })
 //rota para excluir usuários
