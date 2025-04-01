@@ -1,7 +1,8 @@
 const User = require("./user");
-const path = require('path');//modulo para manipular caminhos
-const fs = require('fs'); //modulo para manipular arquivos file system
-const bcrypt = require('bcryptjs');//modulo para criptografar senha
+const path = require('path');
+const fs = require('fs');
+const bcrypt = require('bcryptjs');
+const { error } = require("console");
 
 
 class userService {
@@ -45,13 +46,19 @@ class userService {
 
     async addUser(nome, email, senha, endereco, cpf, telefone) {
         try {
+            const cpfexistente = this.users.some(user => user.cpf === cpf);
+            if (cpfexistente) { 
+                throw new Error ('CPF já cadastrado');
+            }
             const senhaCripto = await bcrypt.hash(senha, 10);
             const user = new User(this.nextId++, nome, email, senhaCripto, endereco, cpf, telefone);
+            console.log(user)
             this.users.push(user);
             this.saveUsers();
             return user;
         } catch (erro) {
             console.log("Erro ao add id", erro);
+            throw erro;
         }
     }
 
@@ -67,25 +74,33 @@ class userService {
         try{
             this.users = this.users.filter(user => user.id !== id);
             this.saveUsers();
-            
+
         }catch{
             console.log('erro ao deletar usuario', erro);
         }
     }
-    updateUser(id, nome, email, senha, endereco, telefone, cpf) {
+
+    updateUser(id, newData) { 
         try {
-            const user = this.users.find(user => user.id ===id);
-            if(!user) throw new Error('Usuário não encontrado');
-            user.nome = nome;
-            user.email = email;
-            user.senha = senhaCripto;
-            user.endereco = endereco;
-            user.telefone = telefone;
-            user.cpf = cpf;
+            const userIndex = this.users.findIndex(user => user.id === id);
+            
+            if (userIndex === -1){ throw new Error("Usuário não encontrado");
+            }
+            if(cpf !== userIndex.cpf) {
+                const cpfexistente = this.users.some(u => u.id !== id
+                    && u.cpf === cpf);
+                    if (cpfexistente) {
+                        throw new Error 
+                    }
+                
+            }
+            this.users[userIndex] = { ...this.users[userIndex], ...newData };
             this.saveUsers();
-            return user;
+    
+            return this.users[userIndex];
         } catch (erro) {
-            console.log('Erro ao atualizar usuário', erro);
+            console.log("Erro ao atualizar usuário:", erro);
+            throw erro;
         }
     }
     
