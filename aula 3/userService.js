@@ -2,6 +2,7 @@ const User = require("./user");
 const path = require('path'); //modulo para manipular caminhos
 const fs = require('fs'); //modulo para manipular arquivos file system
 const bcrypt = require('bcryptjs'); //modulo para criptografar senha
+const mysql = require("./mysql")//Importando funções de conexão com o MySQL
 
 class userService {
     constructor() {
@@ -46,11 +47,17 @@ class userService {
             if (cpfexistente) {
                 throw new Error('CPF já cadastrado');
             }
+
             const senhaCripto = await bcrypt.hash(senha, 10);
-            const user = new User(this.nextId++, nome, email, senhaCripto, endereco, telefone, cfp); //cria um novo usuario
-            this.users.push(user);//adiciona o usuario no array
-            this.saveUsers();//salva o usuario
-            return user;
+
+            const resultados = await mysql.execute(
+                `INSERT INTO usuário (nome, email, senha, endereço, telefone, cpf)
+	                    VALUES ( ?, ?, ?, ?, ?, ?);`
+                        [nome, email, senhaCripto, endereco, telefone, cpf]
+            );
+            return resultados
+
+
         } catch (erro) {
             console.log('Erro ao adicionar usuario', erro);
             throw erro;
