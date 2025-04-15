@@ -10,4 +10,4 @@ class User{
     }
 }
 
-module.exports = User; // exportar o modulo
+module.exports = User; // exportar o modul  o

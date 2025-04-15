@@ -43,16 +43,11 @@ class userService {
 
     async addUser(nome, email, senha, endereco, telefone, cpf) { //função para adicionar usuario
         try {
-            const cpfexistente = this.users.some(user => user.cpf === cpf);
-            if (cpfexistente) {
-                throw new Error('CPF já cadastrado');
-            }
-
             const senhaCripto = await bcrypt.hash(senha, 10);
 
             const resultados = await mysql.execute(
                 `INSERT INTO usuário (nome, email, senha, endereço, telefone, cpf)
-	                    VALUES ( ?, ?, ?, ?, ?, ?);`
+	                    VALUES ( ?, ?, ?, ?, ?, ?);`,
                         [nome, email, senhaCripto, endereco, telefone, cpf]
             );
             return resultados
@@ -84,27 +79,16 @@ class userService {
 
     async updateUser(id, nome, email, endereco, senha, telefone, cpf) {
         try {
-
-            const user = this.users.find(user => user.id === id);
-            if (!user) {
-                throw new Error('Usuario não encontrado');
-            }
-            if (cpf !== user.cpf) {
-                const cpfexistente = this.users.some(u => u.id !== id
-                    && u.cpf === cpf);
-                if (cpfexistente) {
-                    throw new Error('CPF já cadastrado');
-                }
-            }
             const senhaCripto = await bcrypt.hash(senha, 10);
-            user.nome = nome;
-            user.email = email;
-            user.senha = senhaCripto;
-            user.endereco = endereco;
-            user.telefone = telefone;
-            user.cpf = cpf;
-            this.saveUsers();
-            return user;
+
+            const resultados = await mysql.execute(
+                `UPDATE usuário 
+                 SET nome = ?, email = ?, senha = ?, endereço = ?, telefone = ?, cpf = ?
+                 WHERE idusuário = ?`,
+                [nome, email, senhaCripto, endereco, telefone, cpf, id]
+            );
+            return resultados;
+
         } catch (erro) {
             console.log('Erro ao atualizar usuario', erro);
             throw erro;
